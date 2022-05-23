@@ -1,13 +1,11 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"log"
+
+	"github.com/yalagtyarzh/L0/internal/application"
 	"github.com/yalagtyarzh/L0/internal/config"
 	"github.com/yalagtyarzh/L0/pkg/logging"
-	"log"
-	"os"
 )
 
 func main() {
@@ -15,25 +13,14 @@ func main() {
 	cfg := config.GetConfig()
 
 	log.Println("logging initializing")
-	logger := logging.InitLogger(cfg.IsDevelopment, cfg.AppConfig.LogLevel)
-	logger.Info("xded")
+	logger := logging.InitLogger(cfg.InProduction, cfg.AppConfig.LogLevel)
+	defer logger.Sync()
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", cfg.PostgreSQL.Username, cfg.PostgreSQL.Password, cfg.PostgreSQL.Host, cfg.PostgreSQL.Port, cfg.PostgreSQL.Database)
-
-	db, err := pgxpool.Connect(context.Background(), dsn)
+	a, err := application.NewApp(cfg, logger)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal(err.Error())
 	}
 
-	defer db.Close()
-
-	var greeting string
-
-	err = db.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Println(greeting)
+	logger.Info("running application")
+	a.Run()
 }

@@ -1,11 +1,12 @@
 package logging
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"log"
 	"os"
 	"sync"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Logger struct {
@@ -14,29 +15,31 @@ type Logger struct {
 
 var once sync.Once
 
-func InitLogger(mod bool, level string) *Logger {
+func InitLogger(InProd bool, level string) *Logger {
 	var l Logger
-	once.Do(func() {
-		writer := getLogWriter(mod)
-		encoder := getEncoder(mod)
+	once.Do(
+		func() {
+			writer := getLogWriter(InProd)
+			encoder := getEncoder(InProd)
 
-		level, err := zapcore.ParseLevel(level)
-		if err != nil {
-			log.Fatalln(err)
-		}
+			lvl, err := zapcore.ParseLevel(level)
+			if err != nil {
+				log.Fatalln(err)
+			}
 
-		core := zapcore.NewCore(encoder, writer, level)
+			core := zapcore.NewCore(encoder, writer, lvl)
 
-		logger := zap.New(core)
+			logger := zap.New(core)
 
-		l = Logger{logger}
-	})
+			l = Logger{logger}
+		},
+	)
 
 	return &l
 }
 
-func getLogWriter(isDev bool) zapcore.WriteSyncer {
-	if isDev == false {
+func getLogWriter(InProd bool) zapcore.WriteSyncer {
+	if InProd == true {
 		file, _ := os.Create("./logs/log.log")
 		return zapcore.AddSync(file)
 	}
@@ -44,8 +47,8 @@ func getLogWriter(isDev bool) zapcore.WriteSyncer {
 	return zapcore.AddSync(os.Stdout)
 }
 
-func getEncoder(isDev bool) zapcore.Encoder {
-	if isDev == false {
+func getEncoder(InProd bool) zapcore.Encoder {
+	if InProd == true {
 		return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 	}
 
