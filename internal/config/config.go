@@ -3,11 +3,14 @@ package config
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
-	"log"
 	"os"
 )
 
 type Config struct {
+	IsDevelopment bool `env:"IS_DEV" env-default:"true"`
+	AppConfig     struct {
+		LogLevel string `env:"LOG_LEVEL" env-default:"debug"`
+	}
 	PostgreSQL struct {
 		Username string `env:"PSQL_USERNAME" env-required:"true"`
 		Password string `env:"PSQL_PASSWORD" env-required:"true"`
@@ -18,8 +21,6 @@ type Config struct {
 }
 
 func GetConfig() *Config {
-	log.Println("reading environment")
-
 	cfg := &Config{}
 
 	if err := cleanenv.ReadEnv(cfg); err != nil {
