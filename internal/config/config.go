@@ -17,7 +17,7 @@ type Config struct {
 	}
 	Listen struct {
 		IP   string `env:"WB_IP" env-default:"127.0.0.1"`
-		Port string `env:"WB_PORT" env-default:"8080"`
+		Port string `env:"WB_PORT" env-default:":8080"`
 	}
 	PostgreSQL struct {
 		Username string `env:"WB_PSQL_USERNAME" env-required:"true"`

@@ -2,10 +2,8 @@ package config
 
 import (
 	"html/template"
+	"net/http"
 
-	"github.com/go-chi/chi"
-
-	"github.com/yalagtyarzh/L0/internal/driver"
 	"github.com/yalagtyarzh/L0/pkg/logging"
 )
 
@@ -15,6 +13,5 @@ type AppConfig struct {
 	UseCache      bool
 	TemplateCache map[string]*template.Template
 	Logger        *logging.Logger
-	Router        *chi.Mux
-	DB            *driver.DB
+	Router        http.Handler
 }
