@@ -10,6 +10,7 @@ import (
 
 // Config is the config for parsing env variables into application
 type Config struct {
+	UseCache     bool `env:"WB_USE_CACHE" env-default:"false"`
 	InProduction bool `env:"WB_IN_PROD" env-default:"false"`
 	AppConfig    struct {
 		LogLevel string `env:"WB_LOG_LEVEL" env-default:"debug"`
