@@ -15,6 +15,7 @@ type Logger struct {
 
 var once sync.Once
 
+// InitLogger initializize logger for application
 func InitLogger(InProd bool, level string) *Logger {
 	var l Logger
 	once.Do(
@@ -38,6 +39,7 @@ func InitLogger(InProd bool, level string) *Logger {
 	return &l
 }
 
+// getLogWriter returns synced zap writer
 func getLogWriter(InProd bool) zapcore.WriteSyncer {
 	if InProd == true {
 		file, _ := os.Create("./logs/log.log")
@@ -47,6 +49,7 @@ func getLogWriter(InProd bool) zapcore.WriteSyncer {
 	return zapcore.AddSync(os.Stdout)
 }
 
+// getEncoder returns encoded for zap logger
 func getEncoder(InProd bool) zapcore.Encoder {
 	if InProd == true {
 		return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())

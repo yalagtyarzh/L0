@@ -3,19 +3,16 @@ package application
 import (
 	"fmt"
 
-	"github.com/go-chi/chi"
-
 	"github.com/yalagtyarzh/L0/internal/config"
 	"github.com/yalagtyarzh/L0/internal/driver"
+	"github.com/yalagtyarzh/L0/internal/middleware"
 	"github.com/yalagtyarzh/L0/internal/mux"
+	"github.com/yalagtyarzh/L0/internal/render"
 	"github.com/yalagtyarzh/L0/pkg/logging"
 )
 
 type Application struct {
-	cfg    *config.Config
-	logger *logging.Logger
-	router *chi.Mux
-	db     *driver.DB
+	config.AppConfig
 }
 
 func NewApp(cfg *config.Config, logger *logging.Logger) (*Application, error) {
@@ -34,14 +31,32 @@ func NewApp(cfg *config.Config, logger *logging.Logger) (*Application, error) {
 	}
 	logger.Info("connected!")
 
-	return &Application{
-		cfg:    cfg,
-		logger: logger,
-		router: router,
-		db:     db,
-	}, nil
+	logger.Info("creating template cache")
+	tc, err := render.CreateTemplateCache()
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("cannot create template cache: %s", err.Error()))
+		return nil, err
+	}
+
+	appconfig := config.AppConfig{
+		InProduction:  cfg.InProduction,
+		UseCache:      cfg.UseCache,
+		TemplateCache: tc,
+		Logger:        logger,
+		Router:        router,
+		DB:            db,
+	}
+
+	return &Application{appconfig}, nil
 }
 
+// Run starting server for application TODO: Do http server xd
 func (a *Application) Run() {
+	shareApp(&a.AppConfig)
+}
 
+// shareApp shares appconfig for internal packages
+func shareApp(appcfg *config.AppConfig) {
+	render.NewRenderer(appcfg)
+	middleware.NewMiddleware(appcfg)
 }
