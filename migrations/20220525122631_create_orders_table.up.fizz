@@ -1,0 +1,14 @@
+create_table("orders") {
+    t.Column("uid", "uuid", {primary: true})
+    t.Column("track_number", "string", {"size": 50})
+    t.Column("entry", "string", {})
+    t.Column("locale", "string", {})
+    t.Column("internal_signature", "string", {null: true})
+    t.Column("customer_id", "uuid", {})
+    t.Column("delivery_service", "string", {})
+    t.Column("shardkey", "string", {})
+    t.Column("sm_id", "integer", {})
+    t.Column("date_created", "timestamp", {})
+    t.Column("oof_shard", "string", {})
+    t.DisableTimestamps()
+}

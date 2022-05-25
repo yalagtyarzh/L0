@@ -1,0 +1,1 @@
+sql("drop table order_items")

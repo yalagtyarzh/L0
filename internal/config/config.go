@@ -12,7 +12,9 @@ import (
 type Config struct {
 	UseCache     bool `env:"WB_USE_CACHE" env-default:"false"`
 	InProduction bool `env:"WB_IN_PROD" env-default:"false"`
-	AppConfig    struct {
+	NATS         struct {
+	}
+	AppConfig struct {
 		LogLevel string `env:"WB_LOG_LEVEL" env-default:"debug"`
 	}
 	Listen struct {

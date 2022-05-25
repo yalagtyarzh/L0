@@ -1,0 +1,2 @@
+drop_foreign_key("order_items", "order_items_orders_uid_fk")
+drop_foreign_key("order_items", "order_items_items_id_fk")

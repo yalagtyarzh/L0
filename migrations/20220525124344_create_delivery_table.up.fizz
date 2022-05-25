@@ -1,0 +1,12 @@
+create_table("delivery") {
+    t.Column("uid", "uuid", {primary: true})
+    t.Column("name", "string", {})
+    t.Column("phone", "string", {size: 15})
+    t.Column("zip", "string", {size: 7})
+    t.Column("city", "string", {})
+    t.Column("address", "string", {})
+    t.Column("region", "string", {})
+    t.Column("email", "string", {})
+    t.Column("order_uid", "uuid", {})
+    t.DisableTimestamps()
+}

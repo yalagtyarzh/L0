@@ -1,0 +1,14 @@
+create_table("items") {
+    t.Column("id", "integer", {primary: true})
+    t.Column("track_number", "integer", {})
+    t.Column("price", "integer", {})
+    t.Column("rid", "uuid", {})
+    t.Column("name", "string", {})
+    t.Column("sale", "integer", {})
+    t.Column("size", "string", {})
+    t.Column("total_price", "integer", {})
+    t.Column("nm_id", "integer", {})
+    t.Column("brand", "string", {})
+    t.Column("status", "integer", {})
+    t.DisableTimestamps()
+}

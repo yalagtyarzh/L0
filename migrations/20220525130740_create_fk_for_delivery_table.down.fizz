@@ -1,0 +1,1 @@
+drop_foreign_key("delivery", "delivery_orders_uid_fk")

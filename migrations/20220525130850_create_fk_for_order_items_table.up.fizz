@@ -1,0 +1,9 @@
+add_foreign_key("order_items", "order_uid", {"orders": ["uid"]}, {
+    "on_delete": "cascade",
+    "on_update": "cascade",
+})
+
+add_foreign_key("order_items", "chrt_id", {"items": ["id"]}, {
+    "on_delete": "cascade",
+    "on_update": "cascade",
+})

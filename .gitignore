@@ -1,4 +1,6 @@
 .idea
 .bin
 model.json
-logs
+logs.json
+database.yml
+migrations/schema.sql

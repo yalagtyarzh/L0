@@ -1,0 +1,6 @@
+create_table("order_items") {
+    t.Column("uid", "uuid", {primary: true})
+    t.Column("order_uid", "uuid", {})
+    t.Column("chrt_id", "integer", {})
+    t.DisableTimestamps()
+}

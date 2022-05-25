@@ -42,7 +42,7 @@ func InitLogger(InProd bool, level string) *Logger {
 // getLogWriter returns synced zap writer
 func getLogWriter(InProd bool) zapcore.WriteSyncer {
 	if InProd == true {
-		file, _ := os.Create("./logs/log.log")
+		file, _ := os.Create("./logs.json")
 		return zapcore.AddSync(file)
 	}
 
