@@ -1,6 +1,5 @@
 .idea
 .bin
-pub/internal/config/orders.json
 logs.json
 migrations/schema.sql
 database.yml
