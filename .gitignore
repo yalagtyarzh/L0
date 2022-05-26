@@ -2,5 +2,5 @@
 .bin
 model.json
 logs.json
-database.yml
 migrations/schema.sql
+database.yml

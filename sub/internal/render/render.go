@@ -10,8 +10,8 @@ import (
 
 	"github.com/justinas/nosurf"
 
-	"github.com/yalagtyarzh/L0/internal/config"
-	"github.com/yalagtyarzh/L0/internal/models"
+	"github.com/yalagtyarzh/L0/sub/internal/config"
+	"github.com/yalagtyarzh/L0/sub/internal/templatedata"
 )
 
 var app *config.AppConfig
@@ -23,13 +23,13 @@ func NewRenderer(a *config.AppConfig) {
 }
 
 // AddDefaultData adds default data for template
-func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
+func AddDefaultData(td *templatedata.TemplateData, r *http.Request) *templatedata.TemplateData {
 	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
 // Template renders tempaltes using html/template
-func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) error {
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *templatedata.TemplateData) error {
 	var tc map[string]*template.Template
 
 	if app.UseCache {

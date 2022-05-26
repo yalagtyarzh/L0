@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/yalagtyarzh/L0/internal/config"
-	"github.com/yalagtyarzh/L0/internal/driver"
-	"github.com/yalagtyarzh/L0/internal/handlers"
-	"github.com/yalagtyarzh/L0/internal/render"
-	"github.com/yalagtyarzh/L0/pkg/logging"
+	"github.com/yalagtyarzh/L0/sub/internal/config"
+	"github.com/yalagtyarzh/L0/sub/internal/driver"
+	"github.com/yalagtyarzh/L0/sub/internal/handlers"
+	"github.com/yalagtyarzh/L0/sub/internal/render"
+	"github.com/yalagtyarzh/L0/sub/pkg/logging"
 )
 
 var app config.AppConfig

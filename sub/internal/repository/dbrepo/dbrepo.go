@@ -3,8 +3,8 @@ package dbrepo
 import (
 	"database/sql"
 
-	"github.com/yalagtyarzh/L0/internal/config"
-	"github.com/yalagtyarzh/L0/internal/repository"
+	"github.com/yalagtyarzh/L0/sub/internal/config"
+	"github.com/yalagtyarzh/L0/sub/internal/repository"
 )
 
 type postgresDBRepo struct {
