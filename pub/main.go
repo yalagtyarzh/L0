@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -21,16 +22,25 @@ var validExt = ".json"
 
 // main simulates sending data to channel via api
 func main() {
+	cmd := exec.Command("/bin/sh", "nats.sh")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("can't run cmd")
+	}
+
+	fmt.Print("xd")
+
 	cfg := config.GetConfig()
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	sc, _ := stan.Connect(cfg.STAN.Cluster, cfg.STAN.Client)
+
 	defer sc.Close()
 
 	for _, file := range files {
+		time.Sleep(time.Second * time.Duration(cfg.STAN.Delay))
 		fileName := file.Name()
 		if !checkExt(fileName, validExt) {
 			log.Println("Invalid file extension of file", fileName)
@@ -71,8 +81,14 @@ func main() {
 		}
 
 		log.Println("sent")
-		time.Sleep(time.Second * time.Duration(cfg.STAN.Delay))
 	}
+
+	sub, _ := sc.Subscribe(
+		"foo", func(msg *stan.Msg) {
+			fmt.Printf("Received a message: %s\n", string(msg.Data))
+		},
+	)
+	sub.Unsubscribe()
 }
 
 // checkExt checks for valid file extension

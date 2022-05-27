@@ -78,7 +78,10 @@ func setApp(r http.Handler, tc map[string]*template.Template) {
 }
 
 func shareApp(db *driver.DB) {
-	repo := handlers.NewRepo(&app, db)
+	repo, err := handlers.NewRepo(&app, db)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
 	render.NewRenderer(&app)
 	handlers.NewHandler(repo)
 }

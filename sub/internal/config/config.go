@@ -40,7 +40,7 @@ func GetConfig() *Config {
 			cfg = &Config{}
 
 			if err := cleanenv.ReadEnv(cfg); err != nil {
-				fmt.Println("environment is not OK")
+				fmt.Printf("environment is not OK: %s\n", err)
 				os.Exit(1)
 			}
 		},

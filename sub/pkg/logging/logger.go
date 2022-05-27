@@ -15,7 +15,7 @@ type Logger struct {
 
 var once sync.Once
 
-// InitLogger initializize logger for application
+// InitLogger initialize logger for application
 func InitLogger(InProd bool, level string) *Logger {
 	var l Logger
 	once.Do(
