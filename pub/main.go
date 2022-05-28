@@ -7,13 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
 	"github.com/nats-io/stan.go"
 
-	"github.com/yalagtyarzh/L0/models"
+	"github.com/yalagtyarzh/L0/internal/models"
 	"github.com/yalagtyarzh/L0/pub/internal/config"
 )
 
@@ -22,22 +21,24 @@ var validExt = ".json"
 
 // main simulates sending data to channel via api
 func main() {
-	cmd := exec.Command("/bin/sh", "nats.sh")
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalf("can't run cmd")
-	}
-
-	fmt.Print("xd")
-
 	cfg := config.GetConfig()
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	sc, _ := stan.Connect(cfg.STAN.Cluster, cfg.STAN.Client)
+
+	sc, err := stan.Connect(cfg.STAN.Cluster, cfg.STAN.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	defer sc.Close()
+
+	sub, _ := sc.Subscribe(
+		"foo", func(msg *stan.Msg) {
+			fmt.Printf("Received a message: %s\n", string(msg.Data))
+		},
+	)
 
 	for _, file := range files {
 		time.Sleep(time.Second * time.Duration(cfg.STAN.Delay))
@@ -83,12 +84,8 @@ func main() {
 		log.Println("sent")
 	}
 
-	sub, _ := sc.Subscribe(
-		"foo", func(msg *stan.Msg) {
-			fmt.Printf("Received a message: %s\n", string(msg.Data))
-		},
-	)
-	sub.Unsubscribe()
+	defer sub.Unsubscribe()
+	defer sc.Close()
 }
 
 // checkExt checks for valid file extension

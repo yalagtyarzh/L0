@@ -1,6 +1,8 @@
 package repository
 
-import "github.com/yalagtyarzh/L0/models"
+import (
+	"github.com/yalagtyarzh/L0/internal/models"
+)
 
 type DatabaseRepo interface {
 	InsertOrder(o models.Order) error

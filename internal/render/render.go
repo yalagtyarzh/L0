@@ -10,8 +10,8 @@ import (
 
 	"github.com/justinas/nosurf"
 
-	"github.com/yalagtyarzh/L0/sub/internal/config"
-	"github.com/yalagtyarzh/L0/sub/internal/templatedata"
+	"github.com/yalagtyarzh/L0/internal/config"
+	"github.com/yalagtyarzh/L0/internal/templatedata"
 )
 
 var app *config.AppConfig
@@ -28,7 +28,7 @@ func AddDefaultData(td *templatedata.TemplateData, r *http.Request) *templatedat
 	return td
 }
 
-// Template renders tempaltes using html/template
+// Template renders templates using html/template
 func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *templatedata.TemplateData) error {
 	var tc map[string]*template.Template
 
@@ -40,7 +40,7 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *templated
 
 	t, ok := tc[tmpl]
 	if !ok {
-		return errors.New("can't get template from cache")
+		return errors.New("can't get template from repocache")
 	}
 
 	buf := new(bytes.Buffer)

@@ -8,15 +8,21 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type STAN struct {
+	Cluster string `env:"WB_NATS_CLUSTER" env-default:"test-cluster"`
+	Client  string `env:"WB_NATS_CLIENT" env-default:"XXD-Client"`
+	Channel string `env:"WB_NATS_CHANNEL" env-default:"XD-CHANNEL"`
+	Delay   int    `env:"WB_NATS_DELAY" env-default:"5"`
+}
+
 // Config is the config for parsing env variables into application
 type Config struct {
 	UseCache     bool `env:"WB_USE_CACHE" env-default:"false"`
 	InProduction bool `env:"WB_IN_PROD" env-default:"false"`
-	NATS         struct {
-	}
-	AppConfig struct {
+	AppConfig    struct {
 		LogLevel string `env:"WB_LOG_LEVEL" env-default:"debug"`
 	}
+	STAN
 	Listen struct {
 		IP   string `env:"WB_IP" env-default:"127.0.0.1"`
 		Port string `env:"WB_PORT" env-default:":8080"`

@@ -6,11 +6,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/yalagtyarzh/L0/sub/internal/config"
-	"github.com/yalagtyarzh/L0/sub/internal/driver"
-	"github.com/yalagtyarzh/L0/sub/internal/handlers"
-	"github.com/yalagtyarzh/L0/sub/internal/render"
-	"github.com/yalagtyarzh/L0/sub/pkg/logging"
+	"github.com/yalagtyarzh/L0/internal/config"
+	"github.com/yalagtyarzh/L0/internal/driver"
+	"github.com/yalagtyarzh/L0/internal/handlers"
+	"github.com/yalagtyarzh/L0/internal/msgbroker"
+	"github.com/yalagtyarzh/L0/internal/render"
+	"github.com/yalagtyarzh/L0/internal/repocache"
+	"github.com/yalagtyarzh/L0/internal/repository"
+	"github.com/yalagtyarzh/L0/internal/repository/dbrepo"
+	"github.com/yalagtyarzh/L0/pkg/logging"
 )
 
 var app config.AppConfig
@@ -21,7 +25,7 @@ func main() {
 	log.Println("reading environment")
 	cfg = config.GetConfig()
 
-	log.Println("logging initializing")
+	log.Println("logger initializing")
 	logger = logging.InitLogger(cfg.InProduction, cfg.AppConfig.LogLevel)
 	defer logger.Sync()
 
@@ -31,18 +35,30 @@ func main() {
 	logger.Info("connecting to database")
 	db, err := connectDB()
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("database error: %s", err.Error()))
+		logger.Fatal(fmt.Sprintf("database error: %s", err))
 	}
 	defer db.SQL.Close()
+	repo := dbrepo.NewPostgresRepo(db.SQL)
+
+	logger.Info("recovering cache")
+	cache := repocache.NewCache()
+	err = cache.Recover(repo)
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("error in recovering cache: %s", err))
+	}
 
 	logger.Info("creating template cache")
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("cannot create template cache: %s", err.Error()))
+		logger.Fatal(fmt.Sprintf("cannot create template repocache: %s", err))
 	}
 
+	logger.Info("starting listening STAN")
+	stan := msgbroker.NewSTAN(&cfg.STAN, cache, logger)
+	stan.SendMessages()
+
 	setApp(router, tc)
-	shareApp(db)
+	shareApp(repo, cache)
 
 	logger.Info("Starting application")
 	srv := &http.Server{
@@ -77,11 +93,8 @@ func setApp(r http.Handler, tc map[string]*template.Template) {
 	app.TemplateCache = tc
 }
 
-func shareApp(db *driver.DB) {
-	repo, err := handlers.NewRepo(&app, db)
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
+func shareApp(repo repository.DatabaseRepo, cache *repocache.Cache) {
+	r := handlers.NewRepo(&app, repo, cache)
 	render.NewRenderer(&app)
-	handlers.NewHandler(repo)
+	handlers.NewHandler(r)
 }

@@ -1,4 +1,4 @@
-#!/bin/sh
-if [[ ! $(pgrep -f script.sh) ]]; then
+#!/bin/bash
+if [[ ! $(pgrep -f nats-streaming-server) ]]; then
   nats-streaming-server
 fi
