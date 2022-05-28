@@ -1,1 +1,1 @@
-drop_foreign_key("payment", "payment_orders_uid_fk")
+drop_foreign_key("payment", "payment_orders_id_fk")

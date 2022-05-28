@@ -2,6 +2,7 @@ package dbrepo
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/yalagtyarzh/L0/internal/models"
@@ -16,10 +17,11 @@ func (m *postgresDBRepo) InsertOrder(o models.Order) error {
 			insert into orders (order_uid, track_number, entry, locale, internal_signature, customer_id,
 			                    delivery_service, shardkey, sm_id, date_created, oof_shard)
 			values
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning id
 	`
 
-	_, err := m.DB.ExecContext(
+	var orderID int
+	err := m.DB.QueryRowContext(
 		ctx,
 		query,
 		o.OrderUID,
@@ -33,26 +35,47 @@ func (m *postgresDBRepo) InsertOrder(o models.Order) error {
 		o.SmID,
 		o.DateCreated,
 		o.OofShard,
-	)
+	).Scan(&orderID)
 
 	if err != nil {
 		return err
 	}
 
+	err = m.InsertPaymentByOrderID(o.Payment, orderID)
+	if err != nil {
+		return err
+	}
+
+	err = m.InsertDeliveryByOrderID(o.Delivery, orderID)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range o.Items {
+		id, err := m.InsertItem(item)
+		if err != nil {
+			return err
+		}
+
+		err = m.InsertOrderItems(orderID, id)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-// InsertPaymentByOrderID inserts payment object into database by order's UID
-func (m *postgresDBRepo) InsertPaymentByOrderID(pm models.Payment, uid string) error {
+// InsertPaymentByOrderID inserts payment object into database by order's ID
+func (m *postgresDBRepo) InsertPaymentByOrderID(pm models.Payment, orderID int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := `
 			insert into payment (transaction, request_id, currency, provider, amount, payment_dt, bank, delivery_cost,
-			                     goods_total, custom_fee)
+			                     goods_total, custom_fee, order_id)
 			values
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-			where order_uid = $11
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
 	_, err := m.DB.ExecContext(
@@ -68,7 +91,7 @@ func (m *postgresDBRepo) InsertPaymentByOrderID(pm models.Payment, uid string) e
 		pm.DeliveryCost,
 		pm.GoodsTotal,
 		pm.CustomFee,
-		uid,
+		orderID,
 	)
 
 	if err != nil {
@@ -78,16 +101,15 @@ func (m *postgresDBRepo) InsertPaymentByOrderID(pm models.Payment, uid string) e
 	return nil
 }
 
-// InsertDeliveryByOrderID inserts delivery object into database by order's UID
-func (m *postgresDBRepo) InsertDeliveryByOrderID(d models.Delivery, uid string) error {
+// InsertDeliveryByOrderID inserts delivery object into database by order's ID
+func (m *postgresDBRepo) InsertDeliveryByOrderID(d models.Delivery, orderID int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := `
-			insert into delivery (name, phone, zip, city, address, region, email)
+			insert into delivery (name, phone, zip, city, address, region, email, order_id)
 			values
-			($1, $2, $3, $4, $5, $6, $7)
-			where order_uid = $11
+			($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
 	_, err := m.DB.ExecContext(
@@ -100,7 +122,7 @@ func (m *postgresDBRepo) InsertDeliveryByOrderID(d models.Delivery, uid string) 
 		d.Address,
 		d.Region,
 		d.Email,
-		uid,
+		orderID,
 	)
 
 	if err != nil {
@@ -111,17 +133,19 @@ func (m *postgresDBRepo) InsertDeliveryByOrderID(d models.Delivery, uid string) 
 }
 
 // InsertItem inserts item object into database
-func (m *postgresDBRepo) InsertItem(i models.Item) error {
+func (m *postgresDBRepo) InsertItem(i models.Item) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := `
 			insert into items (track_number, price, rid, name, sale, size, total_price, nm_id, brand, status)
 			values
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning id
 	`
 
-	_, err := m.DB.ExecContext(
+	var newID int
+
+	err := m.DB.QueryRowContext(
 		ctx,
 		query,
 		i.TrackNumber,
@@ -134,27 +158,27 @@ func (m *postgresDBRepo) InsertItem(i models.Item) error {
 		i.NmID,
 		i.Brand,
 		i.Status,
-	)
+	).Scan(&newID)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return newID, nil
 }
 
 // InsertOrderItems connects order with items on it
-func (m *postgresDBRepo) InsertOrderItems(orderUID, chrtUID string) error {
+func (m *postgresDBRepo) InsertOrderItems(orderID, chrtID int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := `
-			insert into order_items (order_uid, chrt_id)
+			insert into order_items (order_id, chrt_id)
 			values
 			($1, $2) 
 	`
 
-	_, err := m.DB.ExecContext(ctx, query, orderUID, chrtUID)
+	_, err := m.DB.ExecContext(ctx, query, orderID, chrtID)
 	if err != nil {
 		return err
 	}
@@ -169,7 +193,7 @@ func (m *postgresDBRepo) GetOrders() ([]models.Order, error) {
 
 	var orders []models.Order
 	query := `
-			select order_uid, track_number, entry, locale, internal_signature, customer_id, delivery_service, shardkey, 
+			select id, order_uid, track_number, entry, locale, internal_signature, customer_id, delivery_service, shardkey, 
 			       sm_id, date_created, oof_shard from orders
 	`
 
@@ -179,8 +203,10 @@ func (m *postgresDBRepo) GetOrders() ([]models.Order, error) {
 	}
 
 	for rows.Next() {
+		var id int
 		var order models.Order
 		err := rows.Scan(
+			&id,
 			&order.OrderUID,
 			&order.TrackNumber,
 			&order.Entry,
@@ -197,17 +223,17 @@ func (m *postgresDBRepo) GetOrders() ([]models.Order, error) {
 			return orders, err
 		}
 
-		delivery, err := m.GetDeliveryByOrderUID(order.OrderUID)
+		delivery, err := m.GetDeliveryByOrderUID(id)
 		if err != nil {
 			return orders, err
 		}
 
-		payment, err := m.GetPaymentByOrderUID(order.OrderUID)
+		payment, err := m.GetPaymentByOrderUID(id)
 		if err != nil {
 			return orders, err
 		}
 
-		items, err := m.GetItemsByOrderUID(order.OrderUID)
+		items, err := m.GetItemsByOrderUID(id)
 		if err != nil {
 			return orders, err
 		}
@@ -226,18 +252,18 @@ func (m *postgresDBRepo) GetOrders() ([]models.Order, error) {
 	return orders, nil
 }
 
-// GetDeliveryByOrderUID returns delivery object by order's UID
-func (m *postgresDBRepo) GetDeliveryByOrderUID(uid string) (models.Delivery, error) {
+// GetDeliveryByOrderUID returns delivery object by order's ID
+func (m *postgresDBRepo) GetDeliveryByOrderUID(orderID int) (models.Delivery, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var delivery models.Delivery
 	query := `
 			select name, phone, zip, city, address, region, email from delivery
-			where order_uid = $1
+			where order_id = $1
 	`
 
-	row := m.DB.QueryRowContext(ctx, query, uid)
+	row := m.DB.QueryRowContext(ctx, query, orderID)
 	err := row.Scan(
 		&delivery.Name,
 		&delivery.Phone,
@@ -248,15 +274,15 @@ func (m *postgresDBRepo) GetDeliveryByOrderUID(uid string) (models.Delivery, err
 		&delivery.Email,
 	)
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return delivery, err
 	}
 
 	return delivery, nil
 }
 
-// GetPaymentByOrderUID returns payment object by order's UID
-func (m *postgresDBRepo) GetPaymentByOrderUID(uid string) (models.Payment, error) {
+// GetPaymentByOrderUID returns payment object by order's ID
+func (m *postgresDBRepo) GetPaymentByOrderUID(orderID int) (models.Payment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -265,10 +291,10 @@ func (m *postgresDBRepo) GetPaymentByOrderUID(uid string) (models.Payment, error
 			select "transaction", request_id, currency, provider, amount, payment_dt, bank, delivery_cost, goods_total,
 			custom_fee
 			from payment
-			where order_uid = $1
+			where order_id = $1
 	`
 
-	row := m.DB.QueryRowContext(ctx, query, uid)
+	row := m.DB.QueryRowContext(ctx, query, orderID)
 	err := row.Scan(
 		&payment.Transaction,
 		&payment.RequestID,
@@ -282,15 +308,15 @@ func (m *postgresDBRepo) GetPaymentByOrderUID(uid string) (models.Payment, error
 		&payment.CustomFee,
 	)
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return payment, err
 	}
 
 	return payment, nil
 }
 
-// GetItemsByOrderUID returns all items object by order's UID
-func (m *postgresDBRepo) GetItemsByOrderUID(uid string) ([]models.Item, error) {
+// GetItemsByOrderUID returns all items object by order's ID
+func (m *postgresDBRepo) GetItemsByOrderUID(orderID int) ([]models.Item, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -299,10 +325,10 @@ func (m *postgresDBRepo) GetItemsByOrderUID(uid string) ([]models.Item, error) {
 			select i.track_number, i.price, i.rid, i.name, i.sale, i.size, i.total_price, i.nm_id, i.brand, i.status
 			from items i
 			join order_items oi on (oi.chrt_id = i.id)
-			where oi.order_uid = $1
+			where oi.order_id = $1
 	`
 
-	rows, err := m.DB.QueryContext(ctx, query, uid)
+	rows, err := m.DB.QueryContext(ctx, query, orderID)
 	if err != nil {
 		return items, err
 	}

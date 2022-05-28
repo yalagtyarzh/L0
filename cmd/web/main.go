@@ -54,7 +54,7 @@ func main() {
 	}
 
 	logger.Info("starting listening STAN")
-	stan := msgbroker.NewSTAN(&cfg.STAN, cache, logger)
+	stan := msgbroker.NewSTAN(&cfg.STAN, cache, logger, repo)
 	stan.SendMessages()
 
 	setApp(router, tc)

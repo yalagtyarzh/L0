@@ -14,6 +14,7 @@ import (
 	"github.com/yalagtyarzh/L0/internal/constants"
 	"github.com/yalagtyarzh/L0/internal/models"
 	"github.com/yalagtyarzh/L0/internal/repocache"
+	"github.com/yalagtyarzh/L0/internal/repository"
 	"github.com/yalagtyarzh/L0/internal/utils"
 	"github.com/yalagtyarzh/L0/pkg/logging"
 )
@@ -23,14 +24,16 @@ type STAN struct {
 	config *config.STAN
 	cache  *repocache.Cache
 	logger *logging.Logger
+	db     repository.DatabaseRepo
 }
 
 // NewSTAN returns new stan object
-func NewSTAN(cfg *config.STAN, c *repocache.Cache, l *logging.Logger) *STAN {
+func NewSTAN(cfg *config.STAN, c *repocache.Cache, l *logging.Logger, db repository.DatabaseRepo) *STAN {
 	return &STAN{
 		config: cfg,
 		cache:  c,
 		logger: l,
+		db:     db,
 	}
 }
 
@@ -43,7 +46,7 @@ func (s *STAN) SendMessages() {
 		}
 		defer sc.Close()
 
-		sub, err := sc.Subscribe(s.config.Channel, subHandler)
+		sub, err := s.subscribe(&sc)
 		if err != nil {
 			s.logger.Fatal(fmt.Sprintf("error to subscribe: %s", err))
 		}
@@ -61,6 +64,30 @@ func (s *STAN) SendMessages() {
 			}
 		}
 	}()
+}
+
+func (s *STAN) subscribe(sc *stan.Conn) (stan.Subscription, error) {
+	sub, err := (*sc).Subscribe(
+		s.config.Channel, func(m *stan.Msg) {
+			var order models.Order
+			json.Unmarshal(m.Data, &order)
+			_, ok := s.cache.Load(order.OrderUID)
+			if ok {
+				return
+			}
+
+			s.cache.Store(order.OrderUID, order)
+			err := s.db.InsertOrder(order)
+			if err != nil {
+				s.logger.Error(fmt.Sprintf("error to insert order: %s", err))
+			}
+		},
+	)
+	if err != nil {
+		return sub, err
+	}
+
+	return sub, nil
 }
 
 func (s *STAN) checkMsg(checked *[]string, sc *stan.Conn) error {
@@ -118,8 +145,4 @@ func (s *STAN) checkMsg(checked *[]string, sc *stan.Conn) error {
 	}
 
 	return nil
-}
-
-func subHandler(msg *stan.Msg) {
-	fmt.Printf("Received a message: %s\n", string(msg.Data))
 }

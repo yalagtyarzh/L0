@@ -1,6 +1,6 @@
 package constants
 
 const (
-	Dir      = "./pub/orders"
+	Dir      = "./orders"
 	ValidExt = ".json"
 )

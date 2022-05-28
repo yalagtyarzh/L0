@@ -1,4 +1,4 @@
-add_foreign_key("delivery", "order_uid", {"orders": ["uid"]}, {
+add_foreign_key("delivery", "order_id", {"orders": ["id"]}, {
     "on_delete": "cascade",
     "on_update": "cascade",
 })

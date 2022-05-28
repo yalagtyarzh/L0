@@ -1,7 +1,7 @@
 create_table("payment") {
-    t.Column("uid", "uuid", {primary: true})
+    t.Column("id", "integer", {primary: true})
     t.Column("transaction", "string", {})
-    t.Column("request_id", "uuid", {null: true})
+    t.Column("request_id", "string", {null: true})
     t.Column("currency", "string", {})
     t.Column("provider", "string", {})
     t.Column("amount", "integer", {})
@@ -10,6 +10,6 @@ create_table("payment") {
     t.Column("delivery_cost", "integer", {})
     t.Column("goods_total", "integer", {})
     t.Column("custom_fee", "integer", {})
-    t.Column("order_uid", "uuid", {})
+    t.Column("order_id", "integer", {})
     t.DisableTimestamps()
 }

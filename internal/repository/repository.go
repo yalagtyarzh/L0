@@ -6,12 +6,12 @@ import (
 
 type DatabaseRepo interface {
 	InsertOrder(o models.Order) error
-	InsertPaymentByOrderID(pm models.Payment, uid string) error
-	InsertDeliveryByOrderID(d models.Delivery, uid string) error
-	InsertItem(i models.Item) error
-	InsertOrderItems(orderUID, chrtUID string) error
+	InsertPaymentByOrderID(pm models.Payment, orderID int) error
+	InsertDeliveryByOrderID(d models.Delivery, orderID int) error
+	InsertItem(i models.Item) (int, error)
+	InsertOrderItems(orderID, chrtID int) error
 	GetOrders() ([]models.Order, error)
-	GetDeliveryByOrderUID(uid string) (models.Delivery, error)
-	GetPaymentByOrderUID(uid string) (models.Payment, error)
-	GetItemsByOrderUID(uid string) ([]models.Item, error)
+	GetDeliveryByOrderUID(orderID int) (models.Delivery, error)
+	GetPaymentByOrderUID(orderID int) (models.Payment, error)
+	GetItemsByOrderUID(orderID int) ([]models.Item, error)
 }
