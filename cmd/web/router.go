@@ -15,7 +15,12 @@ func Router() http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(NoSurf)
 
-	mux.Get("/", handlers.Index)
+	mux.NotFound(handlers.Repo.NotFound)
+
+	mux.Get("/", handlers.Repo.Index)
+
+	fileServer := http.FileServer(http.Dir("./static/"))
+	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
 	return mux
 }

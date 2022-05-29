@@ -129,6 +129,12 @@ func (s *STAN) checkMsg(checked *[]string, sc *stan.Conn) error {
 			continue
 		}
 
+		_, ok := s.cache.Load(order.OrderUID)
+
+		if ok {
+			continue
+		}
+
 		jsonData, err := json.Marshal(order)
 		if err != nil {
 			s.logger.Error(fmt.Sprintf("Couldn't marshal: %s\n", err))

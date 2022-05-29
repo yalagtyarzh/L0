@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/yalagtyarzh/L0/internal/config"
@@ -35,8 +36,19 @@ func NewHandler(r *Repository) {
 }
 
 // Index is the main page handler
-func Index(w http.ResponseWriter, r *http.Request) {
+func (m *Repository) Index(w http.ResponseWriter, r *http.Request) {
+	order, ok := Repo.Cache.Load("b563feb7btest")
+	if !ok {
+		Repo.App.Logger.Error("")
+	}
+
+	fmt.Println(order)
 	render.Template(
 		w, r, "index.page.gohtml", &templatedata.TemplateData{},
 	)
+}
+
+// NotFound renders pages which not found
+func (m *Repository) NotFound(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "error.page.gohtml", &templatedata.TemplateData{})
 }
