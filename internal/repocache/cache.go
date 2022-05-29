@@ -46,6 +46,17 @@ func (c *Cache) Load(key string) (models.Order, bool) {
 	return val, ok
 }
 
+// LoadAll returns all values from cache
+func (c *Cache) LoadAll() (orders []models.Order) {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	for _, v := range c.orders {
+		orders = append(orders, v)
+	}
+
+	return orders
+}
+
 // Store stores new order with key into cache
 func (c *Cache) Store(key string, value models.Order) {
 	c.mutex.Lock()

@@ -57,13 +57,13 @@ func main() {
 	stan := msgbroker.NewSTAN(&cfg.STAN, cache, logger, repo)
 	stan.SendMessages()
 
-	setApp(router, tc)
+	setApp(tc)
 	shareApp(repo, cache)
 
 	logger.Info("Starting application")
 	srv := &http.Server{
 		Addr:    cfg.Listen.Port,
-		Handler: app.Router,
+		Handler: router,
 	}
 
 	err = srv.ListenAndServe()
@@ -86,10 +86,9 @@ func connectDB() (*driver.DB, error) {
 	return db, nil
 }
 
-func setApp(r http.Handler, tc map[string]*template.Template) {
+func setApp(tc map[string]*template.Template) {
 	app.InProduction = cfg.InProduction
 	app.UseCache = cfg.UseCache
-	app.Router = r
 	app.TemplateCache = tc
 }
 

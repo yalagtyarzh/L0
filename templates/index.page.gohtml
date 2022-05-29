@@ -1,11 +1,57 @@
 {{template "base" .}}
 
+{{define "css"}}
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+{{end}}
+
 {{define "content"}}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h1>XD MOMENT</h1>
-            </div>
-        </div>
-    </div>
+    {{$res := index .Data "orders"}}
+    <table class="table table_striped table-hover" id="all-orders">
+        <thead>
+        <tr>
+            <th>Order UID</th>
+            <th>Track Number</th>
+            <th>Entry</th>
+            <th>Locale</th>
+            <th>Internal Signature</th>
+            <th>Customer ID</th>
+            <th>Delivery Service</th>
+            <th>Shard Key</th>
+            <th>SM ID</th>
+            <th>Date Created</th>
+            <th>OOF Shard</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range $res}}
+            <tr>
+                <td>
+                    <a href="/{{.OrderUID}}">{{.OrderUID}}</a>
+                </td>
+                <td>{{.TrackNumber}}</td>
+                <td>{{.Entry}}</td>
+                <td>{{.Locale}}</td>
+                <td>{{.InternalSignature}}</td>
+                <td>{{.CustomerID}}</td>
+                <td>{{.DeliveryService}}</td>
+                <td>{{.Shardkey}}</td>
+                <td>{{.SmID}}</td>
+                <td>{{.DateCreated}}</td>
+                <td>{{.OofShard}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+{{end}}
+
+{{define "js"}}
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+                const dataTable = new simpleDatatables.DataTable("#all-orders", {
+                    select: 3, sort: "desc",
+                })
+            }
+        )
+    </script>
 {{end}}

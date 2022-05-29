@@ -2,7 +2,6 @@ package config
 
 import (
 	"html/template"
-	"net/http"
 
 	"github.com/yalagtyarzh/L0/pkg/logging"
 )
@@ -13,5 +12,4 @@ type AppConfig struct {
 	UseCache      bool
 	TemplateCache map[string]*template.Template
 	Logger        *logging.Logger
-	Router        http.Handler
 }
