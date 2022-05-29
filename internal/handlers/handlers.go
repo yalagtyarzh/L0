@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/yalagtyarzh/L0/internal/config"
 	"github.com/yalagtyarzh/L0/internal/render"
@@ -43,6 +44,26 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	render.Template(
 		w, r, "index.page.gohtml", &templatedata.TemplateData{
+			Data: data,
+		},
+	)
+}
+
+// ShowOrder renders page for single order
+func ShowOrder(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+	uid := exploded[1]
+
+	order, ok := Repo.Cache.Load(uid)
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["order"] = order
+	render.Template(
+		w, r, "order.page.gohtml", &templatedata.TemplateData{
 			Data: data,
 		},
 	)

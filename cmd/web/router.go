@@ -9,6 +9,7 @@ import (
 	"github.com/yalagtyarzh/L0/internal/handlers"
 )
 
+// Router returns new http handler with routers
 func Router() http.Handler {
 	mux := chi.NewRouter()
 
@@ -17,6 +18,7 @@ func Router() http.Handler {
 
 	mux.NotFound(handlers.NotFound)
 	mux.Get("/", handlers.Index)
+	mux.Get("/{id}", handlers.ShowOrder)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))

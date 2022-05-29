@@ -70,6 +70,7 @@ func main() {
 	logger.Fatal(err.Error())
 }
 
+// connectDB connects to database
 func connectDB() (*driver.DB, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s", cfg.PostgreSQL.Username, cfg.PostgreSQL.Password, cfg.PostgreSQL.Host,
@@ -86,12 +87,14 @@ func connectDB() (*driver.DB, error) {
 	return db, nil
 }
 
+// setApp configures app object
 func setApp(tc map[string]*template.Template) {
 	app.InProduction = cfg.InProduction
 	app.UseCache = cfg.UseCache
 	app.TemplateCache = tc
 }
 
+// shareApp shares app object into internal packages
 func shareApp(repo repository.DatabaseRepo, cache *repocache.Cache) {
 	r := handlers.NewRepo(&app, repo, cache)
 	render.NewRenderer(&app)

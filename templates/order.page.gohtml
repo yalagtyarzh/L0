@@ -1,0 +1,180 @@
+{{template "base" .}}
+
+{{define "content"}}
+    {{$res := index .Data "order"}}
+     <div class="container">
+         <div class="row">
+             <div class="col">
+                 <h1>Order Summary</h1>
+
+                 <hr>
+
+                 <table class="wide table table-striped">
+                     <thead></thead>
+                     <tbody>
+                     <tr>
+                         <td>Order UID:</td>
+                         <td>{{$res.OrderUID}}</td>
+                     </tr>
+                     <tr>
+                         <td>Track Number:</td>
+                         <td>{{$res.TrackNumber}}</td>
+                     </tr>
+                     <tr>
+                         <td>Entry:</td>
+                         <td>{{$res.Entry}}</td>
+                     </tr>
+                     <tr>
+                         <td>Name:</td>
+                         <td>{{$res.Delivery.Name}}</td>
+                     </tr>
+                     <tr>
+                         <td>Phone:</td>
+                         <td>{{$res.Delivery.Phone}}</td>
+                     </tr>
+                     <tr>
+                         <td>Zip:</td>
+                         <td>{{$res.Delivery.Zip}}</td>
+                     </tr>
+                     <tr>
+                         <td>City:</td>
+                         <td>{{$res.Delivery.City}}</td>
+                     </tr>
+                     <tr>
+                         <td>Address:</td>
+                         <td>{{$res.Delivery.Address}}</td>
+                     </tr>
+                     <tr>
+                         <td>Region:</td>
+                         <td>{{$res.Delivery.Region}}</td>
+                     </tr>
+                     <tr>
+                         <td>Email:</td>
+                         <td>{{$res.Delivery.Email}}</td>
+                     </tr>
+                     <tr>
+                         <td>Transaction:</td>
+                         <td>{{$res.Payment.Transaction}}</td>
+                     </tr>
+                     <tr>
+                         <td>Request ID:</td>
+                         <td>{{$res.Payment.RequestID}}</td>
+                     </tr>
+                     <tr>
+                         <td>Currency:</td>
+                         <td>{{$res.Payment.Currency}}</td>
+                     </tr>
+                     <tr>
+                         <td>Provider:</td>
+                         <td>{{$res.Payment.Provider}}</td>
+                     </tr>
+                     <tr>
+                         <td>Amount:</td>
+                         <td>{{$res.Payment.Amount}}</td>
+                     </tr>
+                     <tr>
+                         <td>Payment DT:</td>
+                         <td>{{$res.Payment.PaymentDt}}</td>
+                     </tr>
+                     <tr>
+                         <td>Bank:</td>
+                         <td>{{$res.Payment.Bank}}</td>
+                     </tr>
+                     <tr>
+                         <td>Delivery Cost:</td>
+                         <td>{{$res.Payment.DeliveryCost}}</td>
+                     </tr>
+                     <tr>
+                         <td>Goods Total:</td>
+                         <td>{{$res.Payment.GoodsTotal}}</td>
+                     </tr>
+                     <tr>
+                         <td>Custom Fee:</td>
+                         <td>{{$res.Payment.CustomFee}}</td>
+                     </tr>
+                     {{range $idx, $item := $res.Items}}
+                         <tr>
+                             <td colspan="2" style="text-align:center">Item №{{add $idx 1}}</td>
+                         </tr>
+                         <tr>
+                             <td>Track Number:</td>
+                             <td>{{$item.TrackNumber}}</td>
+                         </tr>
+                         <tr>
+                             <td>Price:</td>
+                             <td>{{$item.Price}}</td>
+                         </tr>
+                         <tr>
+                             <td>RID:</td>
+                             <td>{{$item.Rid}}</td>
+                         </tr>
+                         <tr>
+                             <td>Name:</td>
+                             <td>{{$item.Name}}</td>
+                         </tr>
+                         <tr>
+                             <td>Sale:</td>
+                             <td>{{$item.Sale}}</td>
+                         </tr>
+                         <tr>
+                             <td>Size:</td>
+                             <td>{{$item.Size}}</td>
+                         </tr>
+                         <tr>
+                             <td>Total Price:</td>
+                             <td>{{$item.TotalPrice}}</td>
+                         </tr>
+                         <tr>
+                             <td>Nm ID:</td>
+                             <td>{{$item.NmID}}</td>
+                         </tr>
+                         <tr>
+                             <td>Brand:</td>
+                             <td>{{$item.Brand}}</td>
+                         </tr>
+                         <tr>
+                             <td>Status:</td>
+                             <td>{{$item.Status}}</td>
+                         </tr>
+                         <tr>
+                             <td colspan="2" style="text-align:center">End of Item №{{add $idx 1}}</td>
+                         </tr>
+                     {{end}}
+                     <tr>
+                         <td>Locale:</td>
+                         <td>{{$res.Locale}}</td>
+                     </tr>
+                     <tr>
+                         <td>Internal Signature:</td>
+                         <td>{{$res.InternalSignature}}</td>
+                     </tr>
+                     <tr>
+                         <td>Customer ID:</td>
+                         <td>{{$res.CustomerID}}</td>
+                     </tr>
+                     <tr>
+                         <td>Delivery Service:</td>
+                         <td>{{$res.DeliveryService}}</td>
+                     </tr>
+                     <tr>
+                         <td>Shard Key:</td>
+                         <td>{{$res.Shardkey}}</td>
+                     </tr>
+                     <tr>
+                         <td>SM ID:</td>
+                         <td>{{$res.SmID}}</td>
+                     </tr>
+                     <tr>
+                         <td>DateCreated:</td>
+                         <td>{{humanDate $res.DateCreated}}</td>
+                     </tr>
+                     <tr>
+                         <td>OOF Shard:</td>
+                         <td>{{$res.OofShard}}</td>
+                     </tr>
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+     </div>
+{{end}}

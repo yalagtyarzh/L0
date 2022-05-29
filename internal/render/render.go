@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/justinas/nosurf"
 
@@ -16,6 +17,21 @@ import (
 
 var app *config.AppConfig
 var pathToTemplates = "./templates"
+
+var functions = template.FuncMap{
+	"humanDate": HumanDate,
+	"add":       Add,
+}
+
+// Add returns sum of a and b
+func Add(a, b int) int {
+	return a + b
+}
+
+//HumanDate returns time in YYYY-MM-DD format
+func HumanDate(t time.Time) string {
+	return t.Format("2006-01-02")
+}
 
 // NewRenderer sets the config for the template package
 func NewRenderer(a *config.AppConfig) {
@@ -71,7 +87,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.New(name).ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return cache, err
 		}

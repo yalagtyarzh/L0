@@ -8,6 +8,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// STAN struct holds information about STAN connection
 type STAN struct {
 	Cluster string `env:"WB_NATS_CLUSTER" env-default:"test-cluster"`
 	Client  string `env:"WB_NATS_CLIENT" env-default:"XXD-Client"`

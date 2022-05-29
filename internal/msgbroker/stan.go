@@ -66,6 +66,7 @@ func (s *STAN) SendMessages() {
 	}()
 }
 
+// subscribe subscribes to STAN channel and loads order data to cache and db
 func (s *STAN) subscribe(sc *stan.Conn) (stan.Subscription, error) {
 	sub, err := (*sc).Subscribe(
 		s.config.Channel, func(m *stan.Msg) {
@@ -90,6 +91,7 @@ func (s *STAN) subscribe(sc *stan.Conn) (stan.Subscription, error) {
 	return sub, nil
 }
 
+// checkMsg
 func (s *STAN) checkMsg(checked *[]string, sc *stan.Conn) error {
 	files, err := ioutil.ReadDir(constants.Dir)
 	if err != nil {
